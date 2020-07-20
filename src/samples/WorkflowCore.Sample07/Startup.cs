@@ -13,15 +13,14 @@ namespace WorkflowCore.Sample07
 {
     public class Startup
     {
-        
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddLogging();
             services.AddWorkflow(x => x.UseMongoDB(@"mongodb://localhost:27017", "workflow"));
-            services.AddMvc();
+            services.AddMvc(x => x.EnableEndpointRouting = false);
         }
 
-        
+
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             //loggerFactory.AddConsole();
@@ -29,15 +28,22 @@ namespace WorkflowCore.Sample07
             //start the workflow host
             var host = app.ApplicationServices.GetService<IWorkflowHost>();
             host.RegisterWorkflow<Sample03.PassingDataWorkflow, Sample03.MyDataClass>();
-            host.RegisterWorkflow<Sample04.EventSampleWorkflow, Sample04.MyDataClass>();            
+            host.RegisterWorkflow<Sample04.EventSampleWorkflow, Sample04.MyDataClass>();
             host.Start();
+
+            host.StartWorkflow("PassingDataWorkflow", new Sample03.MyDataClass
+            {
+                Value1 = 2,
+                Value2 = 3
+            }).GetAwaiter().GetResult();
+
 
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseMvc(); 
+            app.UseMvc();
         }
     }
 }

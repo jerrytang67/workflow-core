@@ -9,6 +9,8 @@ namespace WorkflowCore.Sample17.Steps
         public override ExecutionResult Run(IStepExecutionContext context)
         {
             Console.WriteLine("Doing Task 2");
+            return ExecutionResult.Next();
+
             throw new Exception();
         }
     }

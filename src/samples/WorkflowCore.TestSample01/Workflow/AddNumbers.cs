@@ -14,7 +14,9 @@ namespace WorkflowCore.TestSample01.Workflow
 
         public override ExecutionResult Run(IStepExecutionContext context)
         {
-            Output = (Input1 + Input2);
+            
+            
+            Output = Input1 + Input2;
             return ExecutionResult.Next();
         }
     }

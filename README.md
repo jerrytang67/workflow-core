@@ -132,6 +132,7 @@ There are several persistence providers available as separate Nuget packages.
 
 * MemoryPersistenceProvider *(Default provider, for demo and testing purposes)*
 * [MongoDB](src/providers/WorkflowCore.Persistence.MongoDB)
+* [Cosmos DB](src/providers/WorkflowCore.Providers.Azure)
 * [Amazon DynamoDB](src/providers/WorkflowCore.Providers.AWS)
 * [SQL Server](src/providers/WorkflowCore.Persistence.SqlServer)
 * [PostgreSQL](src/providers/WorkflowCore.Persistence.PostgreSQL)
@@ -159,6 +160,8 @@ These are also available as separate Nuget packages.
 * [Passing Data](src/samples/WorkflowCore.Sample03)
 
 * [Parallel ForEach](src/samples/WorkflowCore.Sample09)
+
+* [Sync ForEach](src/samples/WorkflowCore.Sample09s)
 
 * [While Loop](src/samples/WorkflowCore.Sample10)
 

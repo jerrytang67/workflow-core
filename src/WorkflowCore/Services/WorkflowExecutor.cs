@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using WorkflowCore.Interface;
@@ -37,7 +38,7 @@ namespace WorkflowCore.Services
             _executionResultProcessor = executionResultProcessor;
         }
 
-        public async Task<WorkflowExecutorResult> Execute(WorkflowInstance workflow)
+        public async Task<WorkflowExecutorResult> Execute(WorkflowInstance workflow, CancellationToken cancellationToken = default)
         {
             var wfResult = new WorkflowExecutorResult();
 
@@ -76,7 +77,7 @@ namespace WorkflowCore.Services
                     if (!InitializeStep(workflow, step, wfResult, def, pointer)) 
                         continue;
 
-                    await ExecuteStep(workflow, step, pointer, wfResult, def);
+                    await ExecuteStep(workflow, step, pointer, wfResult, def, cancellationToken);
                 }
                 catch (Exception ex)
                 {
@@ -135,9 +136,19 @@ namespace WorkflowCore.Services
             return true;
         }
 
-        private async Task ExecuteStep(WorkflowInstance workflow, WorkflowStep step, ExecutionPointer pointer, WorkflowExecutorResult wfResult, WorkflowDefinition def)
+        private async Task ExecuteStep(WorkflowInstance workflow, WorkflowStep step, ExecutionPointer pointer, WorkflowExecutorResult wfResult, WorkflowDefinition def, CancellationToken cancellationToken = default)
         {
-            using (var scope = _scopeProvider.CreateScope())
+            IStepExecutionContext context = new StepExecutionContext()
+            {
+                Workflow = workflow,
+                Step = step,
+                PersistenceData = pointer.PersistenceData,
+                ExecutionPointer = pointer,
+                Item = pointer.ContextItem,
+                CancellationToken = cancellationToken
+            };
+            
+            using (var scope = _scopeProvider.CreateScope(context))
             {
                 _logger.LogDebug("Starting step {0} on workflow {1}", step.Name, workflow.Id);
 
@@ -156,15 +167,6 @@ namespace WorkflowCore.Services
                     });
                     return;
                 }
-
-                IStepExecutionContext context = new StepExecutionContext()
-                {
-                    Workflow = workflow,
-                    Step = step,
-                    PersistenceData = pointer.PersistenceData,
-                    ExecutionPointer = pointer,
-                    Item = pointer.ContextItem
-                };
 
                 foreach (var input in step.Inputs)
                     input.AssignInput(workflow.Data, body, context);
